@@ -68,7 +68,8 @@ class Ui(QtWidgets.QMainWindow):
         print(settings.value("port"))
         self.sendMessageText.setText("your mensaage")
         self.sendRoomText.setText("test/2")
-        self.newTopicText.setText("test/2")
+        self.newTopicText.setText("test/#")
+        self.subscribe_fun()
         self.hostText.setText(settings.value("Host" , "localhost" ))
         self.portText.setText(settings.value("port", "1883"))
 
