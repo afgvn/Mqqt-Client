@@ -1,0 +1,50 @@
+
+        broker_address="localhost"
+        #broker_address="iot.eclipse.org"
+        print("creating new instance")
+        client = mqtt.Client("P1") #create new instance
+        client.on_message=self.on_message #attach function to callback
+        print("connecting to broker")
+        client.connect(broker_address) #connect to broker
+        client.loop_start() #start the loop
+        print("Subscribing to topic","test/1")
+        client.subscribe("test/1")
+        print("Publishing message to topic","test/1")
+        client.publish("test/1","OFF")
+        time.sleep(4) # wait
+        client.loop_stop() #stop the loop
+
+
+
+                self.thread = Worker()
+        self.thread.signal.connect(self.test_fun)
+        self.thread.start()
+        
+
+ 
+    def test_fun(self ,result) :
+        print("test : " + result)
+
+
+
+        class Worker(QThread):
+
+    signal = pyqtSignal(str)
+    
+    def __init__(self ):
+        QThread.__init__(self)
+        print("andres create run ")
+       
+    
+    def __del__(self):    
+        print("andres delete  run")
+    
+
+
+
+    def run(self):        
+        # Note: This is never called directly. It is called by Qt once the
+        # thread environment has been set up.
+        self.signal.emit("andres run  run")
+        time.sleep(5)
+        self.signal.emit("andres stop  run")
