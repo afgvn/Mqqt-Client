@@ -16,9 +16,11 @@ class Worker(QThread):
         QThread.__init__(self)
         print("subscribe new topic ")
         self.topic = topic
+        self.flagRun = True
        
     
-    def __del__(self):    
+    def __del__(self):  
+        self.flagRun = False  
         print("delete  task")
     
     def on_message(self , client, userdata, message ):
@@ -31,6 +33,9 @@ class Worker(QThread):
         '''
         messageTemp = [ message ]
         self.signal.emit( messageTemp )
+
+    def stop(self):
+        self.flagRun = False
 
 
     def run(self):        
@@ -45,7 +50,7 @@ class Worker(QThread):
         client.loop_start() #start the loop
 
         client.subscribe(self.topic)
-        while 1 :
+        while (self.flagRun) :
             time.sleep(1) # wait
         client.loop_stop() #stop the loop
 
@@ -61,13 +66,15 @@ class Ui(QtWidgets.QMainWindow):
         self.sendButton.clicked.connect(self.send_fun)
         self.saveConfigBtn.clicked.connect(self.saveCn_fun)
         self.subscribeButton.clicked.connect(self.subscribe_fun)
+        self.deleteTopicBtn.clicked.connect(self.unsubscribe_fun)
 
-        self.recvMesages = []
+        self.topics = []
+        self.counter = 0
 
         settings = QSettings("test.ini", QSettings.IniFormat)
         print(settings.value("port"))
         self.sendMessageText.setText("your mensaage")
-        self.sendRoomText.setText("test/2")
+        self.sendRoomText.setText("test/1")
         self.newTopicText.setText("test/#")
         self.subscribe_fun()
         self.hostText.setText(settings.value("Host" , "localhost" ))
@@ -99,15 +106,22 @@ class Ui(QtWidgets.QMainWindow):
     
     def subscribe_fun(self) :
         self.thread = Worker(self.newTopicText.text())
+        self.topics.append(self.thread)
+        self.topicsList.addItem(self.newTopicText.text())
+        '''
         self.thread.signal.connect(self.newMsg_fun)
-        self.thread.start()
+        self.thread.start()'''
+        pos = len(self.topics) -  1
+        self.topics[pos].signal.connect(self.newMsg_fun)
+        self.topics[pos].start()
+        
+
+    def unsubscribe_fun(self) :
+        self.topics[self.topicsList.currentRow()].stop()
+        self.topics.pop(self.topicsList.currentRow())
+        self.topicsList.takeItem(self.topicsList.currentRow())
 
 
-
-    def test_fun(self ,result) :
-        self.payloadList.addItem(result)
-        print("test : " + result)
-    
     def recurring_timer(self):
         self.counter +=1
         print("Counter: %d" % self.counter)
