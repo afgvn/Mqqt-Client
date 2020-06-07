@@ -1,6 +1,8 @@
 import paho.mqtt.client as mqtt #import the client1
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSize, QObject , QCoreApplication, QSettings ,QTimer , QThreadPool ,  QThread , QRunnable ,pyqtSignal
+from PyQt5 import QtCore, QtGui, QtWidgets,uic
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 import sys , time
 
 ORGANIZATION_NAME = '3Dimesiones App'
@@ -67,16 +69,24 @@ class Ui(QtWidgets.QMainWindow):
         self.saveConfigBtn.clicked.connect(self.saveCn_fun)
         self.subscribeButton.clicked.connect(self.subscribe_fun)
         self.deleteTopicBtn.clicked.connect(self.unsubscribe_fun)
+        self.configButton.clicked.connect(self.confW_fun)
+        self.connectButton.clicked.connect(self.conect_fun)
+        self.disconnectButton.clicked.connect(self.disconect_fun)
+
+        self.configButton.setEnabled(True)
+
+
 
         self.topics = []
         self.counter = 0
+        self.flagActive=False
 
         settings = QSettings("test.ini", QSettings.IniFormat)
         print(settings.value("port"))
         self.sendMessageText.setText("your mensaage")
         self.sendRoomText.setText("test/1")
         self.newTopicText.setText("test/#")
-        self.subscribe_fun()
+        #self.subscribe_fun()
         self.hostText.setText(settings.value("Host" , "localhost" ))
         self.portText.setText(settings.value("port", "1883"))
 
@@ -98,6 +108,21 @@ class Ui(QtWidgets.QMainWindow):
         self.timer.timeout.connect(self.recurring_timer)
         self.timer.start()
         '''
+    def conect_fun( self ) :
+        print("conect!!!")
+        self.configButton.setEnabled(False)
+        self.flagActive=True
+        self.subscribe_fun()
+
+    def disconect_fun( self ) :
+        print("disconect++++++")
+        self.configButton.setEnabled(True)
+        #self.topics[i].stop()
+        for i in  self.topics :
+           i.stop()
+        self.topics.clear()
+        self.topicsList.clear()
+        self.flagActive=False
 
     def newMsg_fun(self , message  ) :
         result =  "topic : " + message[0].topic  + "\r\npayload  : " +  str(message[0].payload.decode("utf-8"))
@@ -150,8 +175,41 @@ class Ui(QtWidgets.QMainWindow):
         settings.setValue("login", "prueba # " + str(size))
         settings.endArray()
 
+    def confW_fun (self):
+        #self.close()
+        '''
+        next=Dialog_TempIP(self)
+        next.__init__()'''
+        dlg = CustomDialog(self)
+        dlg.show()
+        '''
+        if dlg.exec_():
+            print("Success!")
+        else:
+            print("Cancel!")'''
 
 
+ 
+class CustomDialog(QDialog):
+
+    signal = pyqtSignal(object )
+
+    def __init__(self, *args, **kwargs):
+        super(CustomDialog, self).__init__(*args, **kwargs)
+        uic.loadUi('mqqt_conf.ui', self) # Load the .ui file
+
+    def accept(self):
+        print("test accpet")
+        self.close()
+
+        
+
+
+
+
+	
+
+        
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
 app.exec_()
